@@ -407,9 +407,9 @@ const PortfolioTracker = () => {
           return pos;
         }
 
-        const maxPyramidedPosition = pos.baseSize * 2;
+        const maxPyramidedPosition = pos.baseSize * 2.5;
         if (newSize > maxPyramidedPosition) {
-          alert(`Cannot exceed 200% pyramid limit of ${formatCurrencyLakhs(maxPyramidedPosition)} for this position`);
+          alert(`Cannot exceed 250% pyramid limit of ${formatCurrencyLakhs(maxPyramidedPosition)} for this position`);
           return pos;
         }
 
