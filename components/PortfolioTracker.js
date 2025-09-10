@@ -351,7 +351,7 @@ const PortfolioTracker = () => {
       return;
     }
     
-    const maxPyramidedPosition = settings.trancheSize * 2.5;
+    const maxPyramidedPosition = settings.trancheSize * 3;
     if (positionSize > maxPyramidedPosition) {
       alert(`Position size ₹${(positionSize/100000).toFixed(1)}L exceeds 250% pyramid limit of ${formatCurrencyLakhs(maxPyramidedPosition)}`);
       return;
@@ -407,7 +407,7 @@ const PortfolioTracker = () => {
           return pos;
         }
 
-        const maxPyramidedPosition = pos.baseSize * 2.5;
+        const maxPyramidedPosition = pos.baseSize * 3;
         if (newSize > maxPyramidedPosition) {
           alert(`Cannot exceed 250% pyramid limit of ${formatCurrencyLakhs(maxPyramidedPosition)} for this position`);
           return pos;
