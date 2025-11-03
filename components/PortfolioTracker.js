@@ -337,24 +337,30 @@ const PortfolioTracker = () => {
   const addNewPosition = () => {
     if (!newStock.symbol || !newStock.price || !newStock.quantity) return;
     
-    if (positions.length >= settings.maxStocks) {
-      alert(`Cannot exceed maximum of ${settings.maxStocks} stocks in portfolio`);
-      return;
-    }
-    
     const quantity = parseInt(newStock.quantity);
     const positionSize = quantity * parseFloat(newStock.price);
     
+    // Show warnings but allow the action
+    let warnings = [];
+    
+    if (positions.length >= settings.maxStocks) {
+      warnings.push(`⚠️ You have ${positions.length} stocks (exceeds max of ${settings.maxStocks})`);
+    }
+    
     const maxAllowed = TRADING_CAPITAL * settings.maxAllocation;
     if (positionSize > maxAllowed) {
-      alert(`Position size ₹${(positionSize/100000).toFixed(1)}L exceeds maximum allocation of ${formatCurrencyLakhs(maxAllowed)} (${(settings.maxAllocation * 100)}% limit)`);
-      return;
+      warnings.push(`⚠️ Position size ₹${(positionSize/100000).toFixed(1)}L exceeds maximum allocation of ${formatCurrencyLakhs(maxAllowed)} (${(settings.maxAllocation * 100)}% limit)`);
     }
     
     const maxPyramidedPosition = settings.trancheSize * 3;
     if (positionSize > maxPyramidedPosition) {
-      alert(`Position size ₹${(positionSize/100000).toFixed(1)}L exceeds 250% pyramid limit of ${formatCurrencyLakhs(maxPyramidedPosition)}`);
-      return;
+      warnings.push(`⚠️ Position size ₹${(positionSize/100000).toFixed(1)}L exceeds 250% pyramid limit of ${formatCurrencyLakhs(maxPyramidedPosition)}`);
+    }
+
+    // Show warnings if any exist, but still proceed if user confirms
+    if (warnings.length > 0) {
+      const proceed = confirm(`${warnings.join('\n\n')}\n\nDo you want to proceed anyway?`);
+      if (!proceed) return;
     }
 
     const newPosition = {
@@ -385,7 +391,7 @@ const PortfolioTracker = () => {
 
   const addPyramid = (id, customQuantity = null, customPrice = null) => {
     setPositions(positions.map(pos => {
-      if (pos.id === id && pos.pyramidCount < pos.maxPyramidCount) {
+      if (pos.id === id) {
         let pyramidQuantity;
         let pyramidIncrement;
         let pyramidPrice = customPrice || pos.currentPrice;
@@ -402,15 +408,25 @@ const PortfolioTracker = () => {
         const newQuantity = pos.currentQuantity + pyramidQuantity;
         const maxAllowed = TRADING_CAPITAL * settings.maxAllocation;
         
+        // Show warnings but allow the action
+        let warnings = [];
+        
+        if (pos.pyramidCount >= pos.maxPyramidCount) {
+          warnings.push(`⚠️ You've reached max pyramids (${pos.maxPyramidCount}) for this position`);
+        }
+        
         if (newSize > maxAllowed) {
-          alert(`Cannot exceed ${formatCurrencyLakhs(maxAllowed)} per stock (${(settings.maxAllocation * 100)}% limit)`);
-          return pos;
+          warnings.push(`⚠️ New size will exceed ${formatCurrencyLakhs(maxAllowed)} per stock (${(settings.maxAllocation * 100)}% limit)`);
         }
 
         const maxPyramidedPosition = pos.baseSize * 3;
         if (newSize > maxPyramidedPosition) {
-          alert(`Cannot exceed 250% pyramid limit of ${formatCurrencyLakhs(maxPyramidedPosition)} for this position`);
-          return pos;
+          warnings.push(`⚠️ New size will exceed 250% pyramid limit of ${formatCurrencyLakhs(maxPyramidedPosition)} for this position`);
+        }
+
+        if (warnings.length > 0) {
+          const proceed = confirm(`${warnings.join('\n\n')}\n\nDo you want to proceed anyway?`);
+          if (!proceed) return pos;
         }
 
         const newTotalInvested = pos.totalInvested + pyramidIncrement;
@@ -446,9 +462,10 @@ const PortfolioTracker = () => {
         const newCurrentSize = qty * pos.currentPrice;
         const maxAllowed = TRADING_CAPITAL * settings.maxAllocation;
         
+        // Show warning but allow the action
         if (newCurrentSize > maxAllowed) {
-          alert(`Position would exceed ${formatCurrencyLakhs(maxAllowed)} limit (${(settings.maxAllocation * 100)}%)`);
-          return pos;
+          const proceed = confirm(`⚠️ Position would exceed ${formatCurrencyLakhs(maxAllowed)} limit (${(settings.maxAllocation * 100)}%)\n\nDo you want to proceed anyway?`);
+          if (!proceed) return pos;
         }
         
         const avgCostBasis = pos.totalInvested / pos.currentQuantity;
@@ -1142,7 +1159,7 @@ HDFC,1580,100,1520,1"
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={addCustomPyramid}
-                  disabled={!pyramidModal.price || !pyramidModal.quantity || (pyramidModal.position?.pyramidCount >= pyramidModal.position?.maxPyramidCount)}
+                  disabled={!pyramidModal.price || !pyramidModal.quantity}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <Plus size={16} />
@@ -1382,10 +1399,6 @@ HDFC,1580,100,1520,1"
               )}
             </div>
           </div>
-          
-          {getMaxNewPositions() === 0 && (
-            <p className="text-red-600 text-sm mt-2">Portfolio full - maximum {settings.maxStocks} stocks reached</p>
-          )}
         </div>
 
         {/* Complete Positions Table */}
@@ -1599,8 +1612,7 @@ HDFC,1580,100,1520,1"
                           <div className="flex space-x-2">
                             <button
                               onClick={() => openPyramidModal(position)}
-                              disabled={position.pyramidCount >= position.maxPyramidCount}
-                              className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center space-x-1 transition-colors"
+                              className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 flex items-center space-x-1 transition-colors"
                             >
                               <Plus size={12} />
                               <span>Pyramid</span>
