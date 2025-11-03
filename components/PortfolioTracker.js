@@ -1486,7 +1486,7 @@ HDFC,1580,100,1520,1"
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entry Price</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Price</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LTP</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invested</th>
@@ -1503,7 +1503,7 @@ HDFC,1580,100,1520,1"
                           <div className="text-sm font-medium text-gray-900">{position.symbol}</div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-700">₹{position.entryPrice.toFixed(2)}</div>
+                          <div className="text-sm text-gray-700">₹{(position.totalInvested / position.currentQuantity).toFixed(2)}</div>
                         </td>
                         
                         <td className="px-4 py-4 whitespace-nowrap">
